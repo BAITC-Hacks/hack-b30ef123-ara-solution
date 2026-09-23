@@ -1,0 +1,18 @@
+.git
+.venv
+backend/.venv
+frontend/node_modules
+frontend/dist
+IEK
+Systeme electric
+data/derived
+data/normalized
+data/runtime
+data/uploads
+exports
+artifacts
+test-results
+playwright-report
+tmp
+*.log
+.env

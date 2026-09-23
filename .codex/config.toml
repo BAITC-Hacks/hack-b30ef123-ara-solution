@@ -1,0 +1,4 @@
+[agents]
+# One primary agent plus at most three focused subagents. Prefer read-only
+# exploration and review; use a write-capable worker only for a bounded task.
+max_concurrent_threads_per_session = 3
