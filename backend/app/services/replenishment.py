@@ -16,6 +16,10 @@ from app.models import (
 DEMO_DATA_PATH = Path(__file__).resolve().parents[3] / "data" / "demo" / "replenishment_demo.json"
 
 
+class SourceDataValidationError(ValueError):
+    """A deterministic fixture or future import violates the data contract."""
+
+
 @dataclass(frozen=True)
 class DemoProduct:
     scope: str
@@ -33,7 +37,66 @@ class DemoProduct:
 
 def _load_products() -> list[DemoProduct]:
     payload = json.loads(DEMO_DATA_PATH.read_text(encoding="utf-8"))
-    return [DemoProduct(**product) for product in payload["products"]]
+    raw_products = payload.get("products") if isinstance(payload, dict) else None
+    if not isinstance(raw_products, list):
+        raise SourceDataValidationError("demo fixture: products must be a list")
+
+    products: list[DemoProduct] = []
+    for position, raw_product in enumerate(raw_products, start=1):
+        if not isinstance(raw_product, dict):
+            raise SourceDataValidationError(f"source product #{position}: record must be an object")
+        supplier = raw_product.get("supplier", "<missing>")
+        sku = raw_product.get("sku", "<missing>")
+        context = f"source product #{position} (supplier={supplier!r}, sku={sku!r})"
+        try:
+            products.append(DemoProduct(**raw_product))
+        except TypeError as exc:
+            raise SourceDataValidationError(f"{context}: required fields are missing or malformed") from exc
+    return products
+
+
+def _is_finite_number(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _validate_products(products: list[DemoProduct]) -> None:
+    seen_keys: set[tuple[str, str]] = set()
+    allowed_scopes = {"iek", "systeme-electric"}
+
+    for position, product in enumerate(products, start=1):
+        context = f"source product #{position} (supplier={product.supplier!r}, sku={product.sku!r})"
+        if product.scope not in allowed_scopes:
+            raise SourceDataValidationError(f"{context}: unsupported supplier scope {product.scope!r}")
+        if not isinstance(product.supplier, str) or not product.supplier.strip():
+            raise SourceDataValidationError(f"{context}: supplier is required")
+        if not isinstance(product.sku, str) or not product.sku.strip():
+            raise SourceDataValidationError(f"{context}: SKU is required")
+        if not isinstance(product.name, str) or not product.name.strip():
+            raise SourceDataValidationError(f"{context}: name is required")
+        if not isinstance(product.monthly_sales, list) or not product.monthly_sales:
+            raise SourceDataValidationError(f"{context}: monthly_sales must contain at least one value")
+        if any(not _is_finite_number(quantity) or quantity < 0 for quantity in product.monthly_sales):
+            raise SourceDataValidationError(f"{context}: monthly_sales must contain finite non-negative quantities")
+        if not isinstance(product.seasonal_factors, dict) or any(
+            not _is_finite_number(factor) or factor <= 0 for factor in product.seasonal_factors.values()
+        ):
+            raise SourceDataValidationError(f"{context}: seasonal_factors must contain finite positive values")
+        if any(
+            not _is_finite_number(quantity) or quantity < 0
+            for quantity in (product.on_hand_quantity, product.in_transit_quantity, product.stockout_factor)
+        ) or product.stockout_factor <= 0:
+            raise SourceDataValidationError(f"{context}: inventory and stockout values must be finite and non-negative")
+        if not isinstance(product.rounding_multiple, int) or isinstance(product.rounding_multiple, bool) or product.rounding_multiple <= 0:
+            raise SourceDataValidationError(f"{context}: rounding_multiple must be a positive integer")
+        if not isinstance(product.customer_transactions, list) or any(
+            not _is_finite_number(quantity) or quantity < 0 for quantity in product.customer_transactions
+        ):
+            raise SourceDataValidationError(f"{context}: customer_transactions must contain finite non-negative quantities")
+
+        key = (product.supplier.strip(), product.sku.strip())
+        if key in seen_keys:
+            raise SourceDataValidationError(f"{context}: duplicate supplier/SKU key {key!r}")
+        seen_keys.add(key)
 
 
 def _remove_outliers(values: list[float]) -> tuple[list[float], float]:
@@ -82,7 +145,9 @@ def _urgency(available: float, target: float) -> str:
 
 def calculate_replenishment(request: CalculationRequest) -> CalculationResponse:
     groups: dict[str, list[RecommendationLine]] = {}
-    for product in _load_products():
+    products = _load_products()
+    _validate_products(products)
+    for product in products:
         if product.scope != request.supplierScope:
             continue
 

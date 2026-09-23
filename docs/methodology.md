@@ -16,14 +16,22 @@
 
 ## MVP replenishment method
 
-The first version uses a deterministic calculation. It removes an anomalous
+The first version uses a deterministic calculation. It supports filtering a
 monthly sale above three times the median monthly quantity, averages the
-remaining history, applies the seasonal and trend factors, then applies an
+remaining monthly history, applies seasonal and trend factors, then applies an
 explicit growth assumption and a documented stockout factor. The resulting
 demand over the greater of the lead time and planning horizon is reduced by
 on-hand and in-transit quantities, then rounded up to the supplier multiple.
 
-The demo data is synthetic. It also contains an anonymized synthetic customer
-transaction used solely to prove that one exceptional purchase does not inflate
-regular demand. Stockout correction and lead time are explicit request
-assumptions until matching partner source fields are confirmed.
+The current demo data is synthetic. Its customer transaction is shown as a
+traceability marker in the explanation and does not change the calculated
+baseline or recommended quantity. Stockout correction is a synthetic fixture
+factor, and lead time is an explicit request assumption until matching partner
+source fields are confirmed. The request date selects the seasonal month; it
+does not select a historical inventory or in-transit snapshot in this MVP.
+
+Before calculating, the fixture is validated for required identifiers, finite
+non-negative quantities, non-empty sales history, positive rounding multiples,
+and duplicate supplier/SKU keys. Invalid source data is reported with supplier
+and SKU context rather than being silently ignored or causing an arithmetic
+error.

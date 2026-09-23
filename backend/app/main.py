@@ -5,11 +5,11 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.models import CalculationRequest, CalculationResponse
-from app.services.replenishment import calculate_replenishment
+from app.services.replenishment import SourceDataValidationError, calculate_replenishment
 
 
 settings = get_settings()
-app = FastAPI(title="HackAlem Replenishment API", version="0.1.0")
+app = FastAPI(title="HackAlem Replenishment API", version="0.1.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -25,6 +25,11 @@ async def validation_error_handler(_, exc: RequestValidationError) -> JSONRespon
     location = ".".join(str(part) for part in first_error["loc"] if part != "body")
     message = first_error["msg"] if not location else f"{location}: {first_error['msg']}"
     return JSONResponse(status_code=422, content={"code": "INVALID_REQUEST", "message": message})
+
+
+@app.exception_handler(SourceDataValidationError)
+async def source_data_validation_error_handler(_, exc: SourceDataValidationError) -> JSONResponse:
+    return JSONResponse(status_code=500, content={"code": "SOURCE_DATA_INVALID", "message": str(exc)})
 
 
 @app.get("/health")

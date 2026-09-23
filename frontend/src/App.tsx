@@ -6,6 +6,7 @@ import {
   Urgency,
   calculateReplenishment,
 } from './api'
+import { buildOrderCsv } from './orderExport'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
@@ -101,14 +102,20 @@ function App() {
       setExportError('Подтвердите заказ перед экспортом.')
       return
     }
-    const rows = result.groups.flatMap((group) => group.lines.map((line) => [
-      group.supplier,
-      line.sku,
-      line.name,
-      adjustments[line.sku] ?? line.recommendedQuantity,
-      line.urgency,
-    ]))
-    const csv = ['Поставщик;SKU;Наименование;Количество;Срочность', ...rows.map((row) => row.join(';'))].join('\n')
+    const lines = result.groups.flatMap((group) => group.lines.map((line) => ({
+      supplier: group.supplier,
+      sku: line.sku,
+      name: line.name,
+      quantity: adjustments[line.sku] ?? line.recommendedQuantity,
+      urgency: line.urgency,
+    })))
+    let csv: string
+    try {
+      csv = buildOrderCsv(lines)
+    } catch (reason) {
+      setExportError(reason instanceof Error ? reason.message : 'Проверьте количество перед экспортом.')
+      return
+    }
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const link = document.createElement('a')
     link.href = url
@@ -190,8 +197,13 @@ function App() {
                           <input
                             type="number"
                             min="0"
+                            step="1"
                             value={adjustments[line.sku] ?? line.recommendedQuantity}
-                            onChange={(event) => setAdjustments((current) => ({ ...current, [line.sku]: Number(event.target.value) }))}
+                            onChange={(event) => {
+                              setAdjustments((current) => ({ ...current, [line.sku]: Number(event.target.value) }))
+                              setConfirmed(false)
+                              setExportError(null)
+                            }}
                           />
                         </label>
                         <Explanation value={line.explanation} />

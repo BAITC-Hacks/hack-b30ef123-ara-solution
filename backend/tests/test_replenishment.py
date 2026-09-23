@@ -1,8 +1,10 @@
 from datetime import date
 from dataclasses import replace
 
+import pytest
+
 from app.models import CalculationRequest
-from app.services.replenishment import DemoProduct, calculate_replenishment
+from app.services.replenishment import DemoProduct, SourceDataValidationError, _load_products, calculate_replenishment
 
 
 def request(**overrides: object) -> CalculationRequest:
@@ -101,3 +103,62 @@ def test_trend_changes_recommendation(monkeypatch) -> None:
     values = {line.sku: line for line in lines_for()}
     assert values["TREND"].explanation.trendFactor > values["STABLE"].explanation.trendFactor
     assert values["TREND"].recommendedQuantity > values["STABLE"].recommendedQuantity
+
+
+def test_empty_sales_history_is_reported_with_sku_context(monkeypatch) -> None:
+    product = DemoProduct(
+        scope="iek", supplier="IEK", sku="EMPTY", name="Empty sales",
+        monthly_sales=[], seasonal_factors={"9": 1},
+        on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=1,
+        stockout_factor=1, customer_transactions=[],
+    )
+    monkeypatch.setattr("app.services.replenishment._load_products", lambda: [product])
+
+    with pytest.raises(SourceDataValidationError, match="sku='EMPTY'.*monthly_sales"):
+        calculate_replenishment(request())
+
+
+def test_duplicate_supplier_sku_is_reported_before_recommendations(monkeypatch) -> None:
+    product = DemoProduct(
+        scope="iek", supplier="IEK", sku="DUPLICATE", name="Duplicate SKU",
+        monthly_sales=[100], seasonal_factors={"9": 1},
+        on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=1,
+        stockout_factor=1, customer_transactions=[],
+    )
+    monkeypatch.setattr("app.services.replenishment._load_products", lambda: [product, product])
+
+    with pytest.raises(SourceDataValidationError, match="duplicate supplier/SKU"):
+        calculate_replenishment(request())
+
+
+def test_negative_sales_are_reported_and_zero_sales_are_supported(monkeypatch) -> None:
+    invalid = DemoProduct(
+        scope="iek", supplier="IEK", sku="NEGATIVE", name="Negative sales",
+        monthly_sales=[-1], seasonal_factors={"9": 1},
+        on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=1,
+        stockout_factor=1, customer_transactions=[],
+    )
+    monkeypatch.setattr("app.services.replenishment._load_products", lambda: [invalid])
+    with pytest.raises(SourceDataValidationError, match="monthly_sales"):
+        calculate_replenishment(request())
+
+    zero = DemoProduct(
+        scope="iek", supplier="IEK", sku="ZERO", name="Zero sales",
+        monthly_sales=[0], seasonal_factors={"9": 1},
+        on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=1,
+        stockout_factor=1, customer_transactions=[],
+    )
+    monkeypatch.setattr("app.services.replenishment._load_products", lambda: [zero])
+    assert lines_for()[0].recommendedQuantity == 0
+
+
+def test_missing_fixture_fields_are_reported_with_sku_context(monkeypatch) -> None:
+    class InvalidFixture:
+        def read_text(self, *, encoding: str) -> str:
+            assert encoding == "utf-8"
+            return '{"products": [{"scope": "iek", "supplier": "IEK", "sku": "MISSING", "name": "Missing fields"}]}'
+
+    monkeypatch.setattr("app.services.replenishment.DEMO_DATA_PATH", InvalidFixture())
+
+    with pytest.raises(SourceDataValidationError, match="sku='MISSING'.*required fields"):
+        _load_products()

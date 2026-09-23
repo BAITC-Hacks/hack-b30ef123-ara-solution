@@ -2,8 +2,9 @@
 
 ## Scope
 
-The application imports only the top-level workbooks in `IEK/` and `Systeme electric/`.
-The nested folders with the same names are duplicate copies and must be excluded.
+The current runtime does not import partner workbooks. A future importer may use
+only the top-level workbooks in `IEK/` and `Systeme electric/`; nested folders
+with the same names are duplicate copies and must be excluded.
 
 ## Canonical keys
 

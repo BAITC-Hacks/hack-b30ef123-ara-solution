@@ -16,7 +16,10 @@
 - A single large purchase by one anonymized customer does not materially raise regular replenishment demand.
 - Results list SKU, supplier, recommended quantity, urgency, and a structured explanation; they can be viewed grouped by supplier.
 - A user may adjust a recommendation, but an order cannot be sent automatically; export or confirmation requires an explicit user action.
-- Source-data validation reports missing keys, invalid quantities, incompatible units, duplicate records, and unmatched joins instead of silently accepting them.
+- CSV export is UTF-8 with BOM for Excel compatibility; it rejects negative, fractional, or non-finite quantities, and values with delimiters, quotes, or line breaks remain one correctly escaped CSV field.
+- Any quantity adjustment revokes a prior export confirmation and requires a new explicit confirmation.
+- The implemented fixture validator reports missing keys, empty sales history, invalid quantities, and duplicate supplier/SKU records instead of silently accepting them; the API returns `SOURCE_DATA_INVALID` with SKU context.
+- The future workbook-import validation must additionally report incompatible units and unmatched joins before producing recommendations.
 
 ## Contract and regression checks
 
