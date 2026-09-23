@@ -1,18 +1,18 @@
 # Architecture
 
-This project is organized as a modular monorepo with clear separation between API contract, backend implementation, frontend experience, and operational assets.
+## Components
 
-## Layers
+- `frontend/`: React and Vite client. It reads `VITE_API_BASE_URL` and calls the versioned API only.
+- `backend/`: FastAPI application with deterministic replenishment calculation.
+- `api/openapi.yaml`: the public contract shared by frontend and backend.
+- `data/demo/`: synthetic fixtures for the MVP. Partner workbooks in `IEK/` and `Systeme electric/` are read-only source material.
+- `docs/reference/`: the original task and planning conversation, kept outside the runtime layout.
+- `.agents/` and `.codex/`: project-local delivery harness: skills and subagent profiles.
 
-- API layer: OpenAPI contract stored in `api/openapi.yaml`
-- Backend: application logic, domain services, and data access
-- Frontend: presentation layer and user interactions
-- Data: examples, demos, and reusable templates
-- Docs: product, architecture, methodology, runbook, and QA guidance
+The repository deliberately has no shared root virtual environment, build directory, or catch-all scripts folder. Python dependencies live in `backend/.venv`; frontend dependencies live in `frontend/node_modules`; both are reproducible and ignored by Git.
 
-## Principles
+## Calculation flow
 
-- Keep contracts explicit and versioned.
-- Keep UI and backend loosely coupled through the API.
-- Separate demo data from production-like data.
-- Use environment files and Docker for reproducible setup.
+`demo or normalized input → remove monthly outlier → baseline demand → seasonal and trend factors → stockout adjustment → available stock and in-transit supply → rounding multiple → supplier group`
+
+The first increment stores no user data and has no automatic supplier dispatch. SQLite remains the selected persistence option for the next increment, when imported snapshots and user adjustments need to be retained.
