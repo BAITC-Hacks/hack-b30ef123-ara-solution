@@ -1,22 +1,188 @@
 openapi: 3.0.3
 info:
-  title: Project API
-  version: 1.0.0
-  description: Base API contract for the project.
+  title: HackAlem Replenishment API
+  version: 0.1.0
+  description: >-
+    Deterministic supplier replenishment recommendations for the HackAlem MVP.
+    Source workbooks remain read-only; this API exposes only calculated results
+    and their explanation.
 servers:
   - url: http://localhost:8000
 paths:
   /health:
     get:
       summary: Health check
+      operationId: getHealth
       responses:
         '200':
           description: Service is healthy
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/replenishment/calculate:
+    post:
+      summary: Calculate supplier replenishment recommendations
+      operationId: calculateReplenishment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+      responses:
+        '200':
+          description: Recommendations grouped by supplier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '422':
+          description: Invalid calculation request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+    SupplierScope:
+      type: string
+      enum: [iek, systeme-electric]
+    CalculationRequest:
+      type: object
+      required: [supplierScope, asOfDate]
+      properties:
+        supplierScope:
+          $ref: '#/components/schemas/SupplierScope'
+        asOfDate:
+          type: string
+          format: date
+          description: Date used to select the inventory and in-transit snapshot.
+          example: '2026-09-22'
+        planningHorizonDays:
+          type: integer
+          minimum: 1
+          maximum: 90
+          default: 30
+        leadTimeDays:
+          type: integer
+          minimum: 1
+          maximum: 180
+          default: 21
+          description: Explicit MVP assumption until supplier lead-time data is available.
+        growthRate:
+          type: number
+          minimum: -0.5
+          maximum: 2
+          default: 0
+          description: Additional demand-growth assumption, expressed as a fraction.
+        applyStockoutCorrection:
+          type: boolean
+          default: true
+          description: Uses only documented demo or imported stockout periods.
+    CalculationResponse:
+      type: object
+      required: [asOfDate, supplierScope, groups]
+      properties:
+        asOfDate:
+          type: string
+          format: date
+        supplierScope:
+          $ref: '#/components/schemas/SupplierScope'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierRecommendationGroup'
+    SupplierRecommendationGroup:
+      type: object
+      required: [supplier, lines]
+      properties:
+        supplier:
+          type: string
+          example: IEK
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendationLine'
+    RecommendationLine:
+      type: object
+      required: [sku, name, recommendedQuantity, urgency, explanation]
+      properties:
+        sku:
+          type: string
+          example: IEK-001
+        name:
+          type: string
+        recommendedQuantity:
+          type: integer
+          minimum: 0
+        urgency:
+          type: string
+          enum: [low, medium, high, critical]
+        explanation:
+          $ref: '#/components/schemas/RecommendationExplanation'
+    RecommendationExplanation:
+      type: object
+      required:
+        - baselineMonthlyDemand
+        - seasonalFactor
+        - trendFactor
+        - stockoutFactor
+        - outlierRemovedQuantity
+        - onHandQuantity
+        - inTransitQuantity
+        - targetDemand
+        - roundingMultiple
+        - planningHorizonDays
+        - leadTimeDays
+        - growthRate
+        - dataProvenance
+        - assumptions
+      properties:
+        baselineMonthlyDemand:
+          type: number
+        seasonalFactor:
+          type: number
+        trendFactor:
+          type: number
+        stockoutFactor:
+          type: number
+        outlierRemovedQuantity:
+          type: number
+        onHandQuantity:
+          type: number
+        inTransitQuantity:
+          type: number
+        targetDemand:
+          type: number
+        roundingMultiple:
+          type: integer
+        planningHorizonDays:
+          type: integer
+        leadTimeDays:
+          type: integer
+        growthRate:
+          type: number
+        dataProvenance:
+          type: string
+          example: synthetic_demo_fixture
+        assumptions:
+          type: array
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_REQUEST
+        message:
+          type: string
