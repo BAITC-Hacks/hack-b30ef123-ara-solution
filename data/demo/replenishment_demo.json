@@ -1,0 +1,45 @@
+{
+  "asOfDate": "2026-09-22",
+  "provenance": "Synthetic MVP fixture. It does not contain partner sales or customer data.",
+  "products": [
+    {
+      "scope": "iek",
+      "supplier": "IEK",
+      "sku": "IEK-001",
+      "name": "Автоматический выключатель",
+      "monthly_sales": [82, 86, 91, 95, 102, 106, 110, 118, 126],
+      "seasonal_factors": {"1": 0.8, "9": 1.3},
+      "on_hand_quantity": 55,
+      "in_transit_quantity": 20,
+      "rounding_multiple": 10,
+      "stockout_factor": 1.15,
+      "customer_transactions": []
+    },
+    {
+      "scope": "iek",
+      "supplier": "IEK",
+      "sku": "IEK-002",
+      "name": "Контактор",
+      "monthly_sales": [60, 62, 61, 59, 64, 63, 65, 64, 66],
+      "seasonal_factors": {"1": 1.0, "9": 1.0},
+      "on_hand_quantity": 40,
+      "in_transit_quantity": 0,
+      "rounding_multiple": 5,
+      "stockout_factor": 1.0,
+      "customer_transactions": [500]
+    },
+    {
+      "scope": "systeme-electric",
+      "supplier": "Systeme Electric",
+      "sku": "SE-001",
+      "name": "Розетка",
+      "monthly_sales": [120, 118, 121, 125, 130, 128, 134, 140, 145],
+      "seasonal_factors": {"1": 0.9, "9": 1.2},
+      "on_hand_quantity": 80,
+      "in_transit_quantity": 35,
+      "rounding_multiple": 20,
+      "stockout_factor": 1.1,
+      "customer_transactions": []
+    }
+  ]
+}

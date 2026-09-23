@@ -1,45 +1,26 @@
-version: '3.9'
-
 services:
   backend:
     build:
-      context: ./backend
-    container_name: project-backend
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       APP_ENV: ${APP_ENV:-development}
-      BACKEND_HOST: ${BACKEND_HOST:-0.0.0.0}
-    depends_on:
-      - db
-
+      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-5173}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
   frontend:
     build:
-      context: ./frontend
-    container_name: project-frontend
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - "${FRONTEND_PORT:-5173}:80"
     depends_on:
-      - backend
-
-  db:
-    image: postgres:16-alpine
-    container_name: project-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-app_db}
-      POSTGRES_USER: ${DB_USER:-app_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+      backend:
+        condition: service_healthy
