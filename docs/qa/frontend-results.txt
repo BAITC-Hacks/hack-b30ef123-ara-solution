@@ -1,0 +1,77 @@
+﻿✔ export requires explicit confirmation (17.8779ms)
+✔ successful recalculation clears previous confirmation (1.6913ms)
+✖ export rejects invalid adjusted unit quantity -5 (2.3137ms)
+✖ export rejects invalid adjusted unit quantity 1.5 (1.4423ms)
+✖ CSV quotes names containing delimiters, newlines, and quotes (1.6343ms)
+✔ Requirement question: must editing quantities revoke an earlier confirmation? (0.0964ms) # TODO
+ℹ tests 6
+ℹ suites 0
+ℹ pass 2
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 1
+ℹ duration_ms 329.7258
+
+✖ failing tests:
+
+test at tests\frontend-export.test.cjs:113:3
+✖ export rejects invalid adjusted unit quantity -5 (2.3137ms)
+  AssertionError [ERR_ASSERTION]: Invalid quantity exported:
+  Поставщик;SKU;Наименование;Количество;Срочность
+  IEK;QA-001;Synthetic QA item;-5;low
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (C:\Users\ameri\hack-b30ef123-ara-solution\tests\frontend-export.test.cjs:120:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\frontend-export.test.cjs:113:3
+✖ export rejects invalid adjusted unit quantity 1.5 (1.4423ms)
+  AssertionError [ERR_ASSERTION]: Invalid quantity exported:
+  Поставщик;SKU;Наименование;Количество;Срочность
+  IEK;QA-001;Synthetic QA item;1.5;low
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (C:\Users\ameri\hack-b30ef123-ara-solution\tests\frontend-export.test.cjs:120:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\frontend-export.test.cjs:124:1
+✖ CSV quotes names containing delimiters, newlines, and quotes (1.6343ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+    'Поставщик;SKU;Наименование;Количество;Срочность\n' +
+  +   'IEK;QA-001;Synthetic;split\n' +
+  +   '"name";10;low'
+  -   'IEK;QA-001;"Synthetic;split\n' +
+  -   '""name""";10;low'
+  
+      at TestContext.<anonymous> (C:\Users\ameri\hack-b30ef123-ara-solution\tests\frontend-export.test.cjs:131:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Поставщик;SKU;Наименование;Количество;Срочность\nIEK;QA-001;Synthetic;split\n"name";10;low',
+    expected: 'Поставщик;SKU;Наименование;Количество;Срочность\nIEK;QA-001;"Synthetic;split\n""name""";10;low',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+

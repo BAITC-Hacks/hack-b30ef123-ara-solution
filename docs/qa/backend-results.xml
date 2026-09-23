@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="29" time="0.942" timestamp="2026-09-23T16:17:38.728017+05:00" hostname="DESKTOP-64FJC7C"><testcase classname="backend.tests.test_api" name="test_health" time="0.005" /><testcase classname="backend.tests.test_api" name="test_calculate_returns_contract_shape" time="0.004" /><testcase classname="backend.tests.test_api" name="test_calculate_rejects_unknown_scope" time="0.003" /><testcase classname="backend.tests.test_replenishment" name="test_recommendations_are_grouped_and_explained" time="0.001" /><testcase classname="backend.tests.test_replenishment" name="test_seasonality_changes_the_target_demand" time="0.001" /><testcase classname="backend.tests.test_replenishment" name="test_stockout_correction_increases_target_demand" time="0.001" /><testcase classname="backend.tests.test_replenishment" name="test_customer_outlier_is_removed_from_regular_demand" time="0.000" /><testcase classname="backend.tests.test_replenishment" name="test_customer_outlier_does_not_inflate_recommendation" time="0.001" /><testcase classname="backend.tests.test_replenishment" name="test_in_transit_and_inventory_reduce_recommendation" time="0.000" /><testcase classname="backend.tests.test_replenishment" name="test_longer_lead_time_increases_target_demand" time="0.001" /><testcase classname="backend.tests.test_replenishment" name="test_trend_changes_recommendation" time="0.000" /><testcase classname="tests.test_procurement_qa" name="test_response_matches_published_contract[iek]" time="0.004" /><testcase classname="tests.test_procurement_qa" name="test_response_matches_published_contract[systeme-electric]" time="0.004" /><testcase classname="tests.test_procurement_qa" name="test_health_matches_published_contract" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes0]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes1]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes2]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes3]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes4]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes5]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes6]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_invalid_requests_return_documented_errors[changes7]" time="0.003" /><testcase classname="tests.test_procurement_qa" name="test_inventory_reduces_order_with_known_oracle[on_hand_quantity]" time="0.001" /><testcase classname="tests.test_procurement_qa" name="test_inventory_reduces_order_with_known_oracle[in_transit_quantity]" time="0.001" /><testcase classname="tests.test_procurement_qa" name="test_growth_and_rounding_known_oracle" time="0.000" /><testcase classname="tests.test_procurement_qa" name="test_zero_sales_does_not_create_order" time="0.000" /><testcase classname="tests.test_procurement_qa" name="test_empty_supplier_catalog" time="0.000" /><testcase classname="tests.test_procurement_qa" name="test_empty_sales_reports_validation_error" time="0.001"><failure message="ZeroDivisionError: division by zero">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000022BFAFFB200&gt;
+product = DemoProduct(scope='iek', supplier='IEK', sku='QA-SYNTHETIC', name='Synthetic QA item', monthly_sales=[100, 100, 100, 1...{'9': 1}, on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=10, stockout_factor=1, customer_transactions=[])
+
+    def test_empty_sales_reports_validation_error(monkeypatch, product):
+        # Acceptance: invalid/missing source quantities must be reported, not crash.
+        with pytest.raises(ValueError, match="(?i)(sales|history|empty)"):
+&gt;           calculate(monkeypatch, replace(product, monthly_sales=[]))
+
+tests\test_procurement_qa.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_procurement_qa.py:63: in calculate
+    result = engine.calculate_replenishment(CalculationRequest(**{**REQUEST, **changes}))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = CalculationRequest(supplierScope='iek', asOfDate=datetime.date(2026, 9, 22), planningHorizonDays=30, leadTimeDays=21, growthRate=0, applyStockoutCorrection=True)
+
+    def calculate_replenishment(request: CalculationRequest) -&gt; CalculationResponse:
+        groups: dict[str, list[RecommendationLine]] = {}
+        for product in _load_products():
+            if product.scope != request.supplierScope:
+                continue
+    
+            filtered_sales, removed_quantity = _remove_outliers(product.monthly_sales)
+&gt;           baseline = sum(filtered_sales) / len(filtered_sales)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ZeroDivisionError: division by zero
+
+backend\app\services\replenishment.py:90: ZeroDivisionError</failure></testcase><testcase classname="tests.test_procurement_qa" name="test_duplicate_source_skus_report_validation_error" time="0.006"><failure message="Failed: DID NOT RAISE ValueError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000022BFAFE3E70&gt;
+product = DemoProduct(scope='iek', supplier='IEK', sku='QA-SYNTHETIC', name='Synthetic QA item', monthly_sales=[100, 100, 100, 1...{'9': 1}, on_hand_quantity=0, in_transit_quantity=0, rounding_multiple=10, stockout_factor=1, customer_transactions=[])
+tmp_path = WindowsPath('C:/Users/ameri/AppData/Local/Temp/pytest-of-ameri/pytest-0/test_duplicate_source_skus_rep0')
+
+    def test_duplicate_source_skus_report_validation_error(monkeypatch, product, tmp_path):
+        source = tmp_path / "synthetic-duplicates.json"
+        source.write_text(json.dumps({"products": [asdict(product), asdict(product)]}), encoding="utf-8")
+        monkeypatch.setattr(engine, "DEMO_DATA_PATH", source)
+&gt;       with pytest.raises(ValueError, match="(?i)(duplicate|sku)"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests\test_procurement_qa.py:99: Failed</failure></testcase></testsuite></testsuites>

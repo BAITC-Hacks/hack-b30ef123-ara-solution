@@ -1,0 +1,61 @@
+{
+  "asOfDate": "2026-09-22",
+  "supplierScope": "iek",
+  "groups": [
+    {
+      "supplier": "IEK",
+      "lines": [
+        {
+          "sku": "QA-SYNTHETIC",
+          "name": "Synthetic QA item",
+          "recommendedQuantity": 100,
+          "urgency": "critical",
+          "explanation": {
+            "baselineMonthlyDemand": 100.0,
+            "seasonalFactor": 1.0,
+            "trendFactor": 1.0,
+            "stockoutFactor": 1.0,
+            "outlierRemovedQuantity": 0.0,
+            "onHandQuantity": 0.0,
+            "inTransitQuantity": 0.0,
+            "targetDemand": 100.0,
+            "roundingMultiple": 10,
+            "planningHorizonDays": 30,
+            "leadTimeDays": 21,
+            "growthRate": 0.0,
+            "dataProvenance": "synthetic_demo_fixture",
+            "assumptions": [
+              "coverage_days=30",
+              "outlier_filter=monthly_quantity_above_3x_median"
+            ]
+          }
+        },
+        {
+          "sku": "QA-SYNTHETIC",
+          "name": "Synthetic QA item",
+          "recommendedQuantity": 100,
+          "urgency": "critical",
+          "explanation": {
+            "baselineMonthlyDemand": 100.0,
+            "seasonalFactor": 1.0,
+            "trendFactor": 1.0,
+            "stockoutFactor": 1.0,
+            "outlierRemovedQuantity": 0.0,
+            "onHandQuantity": 0.0,
+            "inTransitQuantity": 0.0,
+            "targetDemand": 100.0,
+            "roundingMultiple": 10,
+            "planningHorizonDays": 30,
+            "leadTimeDays": 21,
+            "growthRate": 0.0,
+            "dataProvenance": "synthetic_demo_fixture",
+            "assumptions": [
+              "coverage_days=30",
+              "outlier_filter=monthly_quantity_above_3x_median"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
