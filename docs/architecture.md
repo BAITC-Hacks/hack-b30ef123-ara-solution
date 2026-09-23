@@ -13,6 +13,6 @@ The repository deliberately has no shared root virtual environment, build direct
 
 ## Calculation flow
 
-`demo or normalized input → remove monthly outlier → baseline demand → seasonal and trend factors → stockout adjustment → available stock and in-transit supply → rounding multiple → supplier group`
+`synthetic demo input → remove monthly outlier → baseline demand → seasonal and trend factors → stockout adjustment → available stock and in-transit supply → rounding multiple → supplier group`
 
 The first increment stores no user data and has no automatic supplier dispatch. SQLite remains the selected persistence option for the next increment, when imported snapshots and user adjustments need to be retained.

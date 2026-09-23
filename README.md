@@ -67,7 +67,7 @@ React / Vite frontend ── POST /api/v1/replenishment/calculate ──► Fast
 Требуется Docker Desktop с запущенным Docker Engine.
 
 ```powershell
-Set-Location C:\Users\arthur\hack-b30ef123-ara-solution
+# Выполняйте из корня клонированного репозитория
 Copy-Item .env.example .env
 docker compose up --build
 ```
@@ -87,7 +87,7 @@ docker compose up --build
 Терминал 1:
 
 ```powershell
-Set-Location C:\Users\arthur\hack-b30ef123-ara-solution
+# Выполняйте из корня клонированного репозитория
 Copy-Item .env.example .env
 py -m venv backend/.venv
 backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
@@ -97,7 +97,7 @@ backend/.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir backend --rel
 Терминал 2:
 
 ```powershell
-Set-Location C:\Users\arthur\hack-b30ef123-ara-solution\frontend
+Set-Location frontend
 npm.cmd install
 npm.cmd run dev
 ```

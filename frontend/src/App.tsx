@@ -147,7 +147,7 @@ function App() {
             </select>
           </label>
           <label>
-            Дата среза
+            Дата для сезонности
             <input type="date" value={request.asOfDate} onChange={(event) => setRequest((current) => ({ ...current, asOfDate: event.target.value }))} required />
           </label>
           <label>
@@ -183,7 +183,7 @@ function App() {
           )}
           {status === 'success' && result && (
             <>
-              <div className="results-heading"><div><p className="eyebrow">Дата среза: {result.asOfDate}</p><h2>Рекомендации к заказу</h2></div><span>{result.groups.reduce((total, group) => total + group.lines.length, 0)} SKU</span></div>
+              <div className="results-heading"><div><p className="eyebrow">Дата для сезонности: {result.asOfDate}</p><h2>Рекомендации к заказу</h2></div><span>{result.groups.reduce((total, group) => total + group.lines.length, 0)} SKU</span></div>
               {result.groups.length === 0 ? <p className="no-lines">Для выбранных параметров рекомендации отсутствуют.</p> : result.groups.map((group) => (
                 <section className="supplier-group" key={group.supplier}>
                   <h3>{group.supplier}</h3>
