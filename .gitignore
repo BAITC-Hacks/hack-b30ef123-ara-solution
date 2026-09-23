@@ -45,6 +45,23 @@ htmlcov/
 *.sqlite3
 pgdata/
 
+# Generated procurement data and exports
+# Keep source workbooks in IEK/ and Systeme electric/ versioned; only derived
+# imports, demo builds, runtime state, and user exports belong here.
+data/derived/
+data/normalized/
+data/runtime/
+data/uploads/
+exports/
+artifacts/
+
+# Test and browser-run artifacts
+test-results/
+playwright-report/
+blob-report/
+allure-results/
+.ipynb_checkpoints/
+
 # IDE and editor settings
 .idea/
 .vscode/
